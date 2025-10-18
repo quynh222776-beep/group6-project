@@ -1,25 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import AddUser from "./components/AddUser";
+import UserList from "./components/UserList";
 
-function App() {
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-bg">
+      <div className="app-container">
+        <header className="app-header">
+          <h1>🌸 Quản lý User 🌸</h1>
+        </header>
+
+        <main className="main-grid">
+          <AddUser />
+          <UserList />
+        </main>
+      </div>
     </div>
   );
 }
-
-export default App;
