@@ -5,7 +5,7 @@ import { FaPlus } from "react-icons/fa";
 export default function AddUser() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const API = "http://localhost:3001/users";
+  const API = "http://localhost:3000/users";
 
   const handleSubmit = async (e) => {
     e.preventDefault();

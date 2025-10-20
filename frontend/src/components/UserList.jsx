@@ -4,7 +4,7 @@ import { FaUser, FaEnvelope } from "react-icons/fa";
 
 export default function UserList() {
   const [users, setUsers] = useState([]);
-  const API = "http://localhost:3001/users";
+  const API = "http://localhost:3000/users";
 
   const loadUsers = async () => {
     try {
