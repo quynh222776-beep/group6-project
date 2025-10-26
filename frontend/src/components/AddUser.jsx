@@ -1,51 +1,50 @@
+// src/components/AddUser.jsx
 import React, { useState } from "react";
-import axios from "axios";
-import { FaPlus } from "react-icons/fa";
+import { API } from "../App";
 
 export default function AddUser() {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const API = "http://localhost:3000/users";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!name.trim() || !email.trim()) {
-      alert("Vui lòng nhập tên và email.");
+  const handleAdd = async () => {
+    if (!name.trim()) {
+      alert("⚠️ Vui lòng nhập tên user!");
       return;
     }
+
     try {
-      const res = await axios.post(API, { name, email });
-      window.dispatchEvent(new CustomEvent("userAdded", { detail: res.data }));
+      const res = await fetch(`${API}/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!res.ok) throw new Error("Thêm user thất bại");
+
+      const newUser = await res.json();
+      alert(`✅ Đã thêm user: ${newUser.name}`);
       setName("");
-      setEmail("");
+
+      // Sau khi thêm xong, reload danh sách
+      window.dispatchEvent(new Event("userUpdated"));
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi thêm user. Kiểm tra backend.");
+      alert("❌ Lỗi khi thêm user!");
     }
   };
 
   return (
     <div className="card">
-      <h2 className="card-title"><FaPlus /> Thêm User</h2>
-
-      <form className="form" onSubmit={handleSubmit}>
-        <input
-          className="input"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Họ tên"
-          required
-        />
-        <input
-          className="input"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          type="email"
-          required
-        />
-        <button className="btn" type="submit"><FaPlus /> Thêm</button>
-      </form>
+      <h2>➕ Thêm User</h2>
+      <input
+        type="text"
+        placeholder="Nhập tên user..."
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="input"
+      />
+      <button onClick={handleAdd} className="btn">
+        Thêm
+      </button>
     </div>
   );
 }
