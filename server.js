@@ -51,3 +51,4 @@ app.get("/users", async (req, res) => {
 
 // Chạy server
 app.listen(PORT, () => console.log(`🌍 Server đang chạy tại http://localhost:${PORT}`));
+// code từ nhánh database (Khanh)
