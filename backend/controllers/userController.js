@@ -35,3 +35,4 @@ const deleteUser = (req, res) => {
 
 // ✅ Xuất ra đúng cách:
 module.exports = { getUsers, createUser, updateUser, deleteUser };
+// Hoạt động 7 - API PUT/DELETE User hoàn tất
