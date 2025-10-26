@@ -1,60 +1,40 @@
+// src/components/UserList.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { FaUser, FaEnvelope } from "react-icons/fa";
+import { API } from "../App";
 
 export default function UserList() {
   const [users, setUsers] = useState([]);
-  const API = "http://localhost:3000/users";
 
-  const loadUsers = async () => {
+  const fetchUsers = async () => {
     try {
-      const res = await axios.get(API);
-      setUsers(res.data);
+      const res = await fetch(`${API}/users`);
+      if (!res.ok) throw new Error("Không tải được danh sách user");
+      const data = await res.json();
+      setUsers(data);
     } catch (err) {
-      console.error("Lỗi load users:", err);
+      console.error(err);
+      alert("❌ Lỗi tải danh sách user!");
     }
   };
 
   useEffect(() => {
-    loadUsers();
+    fetchUsers();
 
-    const handler = (e) => {
-      const added = e.detail;
-      if (added && added.id) setUsers((prev) => [...prev, added]);
-      else loadUsers();
-    };
-    window.addEventListener("userAdded", handler);
-    return () => window.removeEventListener("userAdded", handler);
+    // Khi user được thêm mới, reload danh sách
+    window.addEventListener("userUpdated", fetchUsers);
+    return () => window.removeEventListener("userUpdated", fetchUsers);
   }, []);
 
   return (
     <div className="card">
-      <h2 className="card-title">📋 Danh sách User</h2>
-
-      {users.length === 0 ? (
-        <p className="muted">Chưa có user nào — hãy thêm thử.</p>
-      ) : (
-        <table className="user-table">
-          <thead>
-            <tr>
-              <th>Họ tên</th>
-              <th>Email</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td className="name-cell">
-                  <FaUser className="icon-inline" /> {u.name}
-                </td>
-                <td>
-                  <FaEnvelope className="icon-inline" /> {u.email}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <h2>📋 Danh sách User</h2>
+      <ul>
+        {users.length === 0 ? (
+          <li>Chưa có user nào</li>
+        ) : (
+          users.map((u) => <li key={u.id}>{u.name}</li>)
+        )}
+      </ul>
     </div>
   );
 }

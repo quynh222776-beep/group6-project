@@ -1,6 +1,7 @@
 import React from "react";
 import AddUser from "./components/AddUser";
 import UserList from "./components/UserList";
+export const API = "http://10.10.10.187:5000/api";
 
 export default function App() {
   return (

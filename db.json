@@ -1,17 +1,17 @@
 {
   "users": [
     {
-      "id": 1,
+      "id": "1",
       "name": "Hân",
       "email": "han@example.com"
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "Quỳnh",
       "email": "quynh@example.com"
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "Khanh",
       "email": "khanh@example.com"
     },
@@ -19,6 +19,11 @@
       "id": "92b1",
       "name": "Minh",
       "email": "minh@example.com"
+    },
+    {
+      "id": "5550",
+      "name": "Trang",
+      "email": "trang@example.com"
     }
   ]
 }
