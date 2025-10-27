@@ -5,12 +5,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const userRoutes = require("./routes/user"); // ✅ Đường dẫn đúng
-const User = require("./database/models/User"); // ✅ Model User
+// ✅ Import routes & models
+const userRoutes = require("./routes/user"); // Đường dẫn route user
+const User = require("./database/models/User"); // Model User
 
 const app = express();
 
-// Middleware
+// ✅ Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -24,12 +25,12 @@ mongoose
   .then(() => console.log("✅ Đã kết nối MongoDB Atlas thành công!"))
   .catch((err) => console.error("❌ Lỗi kết nối MongoDB:", err));
 
-// Theo dõi trạng thái connection (debug)
+// ✅ Theo dõi trạng thái kết nối MongoDB
 mongoose.connection.on("connected", () => console.log("🔗 MongoDB connected"));
 mongoose.connection.on("error", (err) => console.error("❌ MongoDB error:", err));
 mongoose.connection.on("disconnected", () => console.log("⚠️ MongoDB disconnected"));
 
-// Middleware log request
+// ✅ Middleware log request
 app.use((req, res, next) => {
   console.log(`➡️ ${req.method} ${req.url}`);
   if (Object.keys(req.body).length > 0) console.log("📦 Body:", req.body);
