@@ -1,7 +1,5 @@
-
 # README_Khanh.md
-=======
-
+# README_Khanh.md
 # Vai trò: Database Developer
 
 ## Công nghệ sử dụng
@@ -15,8 +13,3 @@
 - Tạo dữ liệu mẫu (seed data) cho dự án.  
 - Kiểm tra và tối ưu truy vấn dữ liệu.  
 - Hỗ trợ backend trong việc truy cập, validate và xử lý dữ liệu.
-
-
-
-=======
-

@@ -1,3 +1,4 @@
+
 // server.js
 require("dotenv").config(); // Đọc biến môi trường từ .env
 
@@ -5,20 +6,27 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-// Import model User
-<<<<<<< HEAD
-const User = require("./database/models/user");
-=======
-const User = require("./database/models/User");
->>>>>>> backend
+// ✅ Import routes & models
+const userRoutes = require("./routes/user"); // Đường dẫn route user
+const User = require("./database/models/user"); // Model User
 
 const app = express();
-app.use(express.json());
-app.use(cors());
 
-// Lấy MONGO_URI và PORT từ file .env
-const MONGO_URI = process.env.MONGO_URI;
-const PORT = process.env.PORT || 3000;
+app.use(cors());
+app.use(express.json());
+
+app.use('/api', userRoutes);
+
+const port = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
+const cors = require('cors');
+app.use(cors());
+app.use(express.json());
+
+// ✅ Tạo route gốc /api
+app.use('/api/users', userRoutes);
+
 
 // ✅ Kết nối MongoDB Atlas
 mongoose
@@ -54,9 +62,15 @@ app.get("/users", async (req, res) => {
 });
 
 // Chạy server
-<<<<<<< HEAD
-app.listen(PORT, () => console.log(`🌍 Server đang chạy tại http://localhost:${PORT}`));
-=======
-app.listen(PORT, () => console.log(`🌍 Server đang chạy tại http://localhost:${PORT}`));
-// code từ nhánh database (Khanh)
->>>>>>> backend
+console.log("✅ Server connected and running on http://localhost:" + PORT);
+
+
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, "0.0.0.0", () => {
+console.log("✅ Server connected and running on http://localhost:" + PORT);
+
+
+
+});
