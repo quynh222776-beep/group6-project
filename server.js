@@ -6,21 +6,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-// Import model User
-const User = require("./database/models/User");
-=======
-const express = require('express');
-<<<<<<< HEAD
-const cors = require('cors');
-const dotenv = require('dotenv');
-const userRoutes = require('./routes/user');
-=======
-const dotenv = require('dotenv');
-const userRoutes = require('./routes/user'); // ✅ Đường dẫn đúng
->>>>>>> d4b3da9b46db6fe2cae128fd48499d3b06a94665
-
-dotenv.config();
->>>>>>> frontend
+// ✅ Import routes & models
+const userRoutes = require("./routes/user"); // Đường dẫn route user
+const User = require("./database/models/User"); // Model User
 
 const app = express();
 <<<<<<< HEAD
@@ -85,8 +73,3 @@ console.log("✅ Server connected and running on http://localhost:" + PORT);
 
 
 });
-<<<<<<< HEAD
->>>>>>> d4b3da9b46db6fe2cae128fd48499d3b06a94665
-=======
->>>>>>> frontend
->>>>>>> database
