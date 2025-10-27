@@ -1,3 +1,4 @@
+
 // server.js
 require("dotenv").config(); // Đọc biến môi trường từ .env
 
@@ -6,20 +7,28 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 // ✅ Import routes & models
-const userRoutes = require("./routes/user"); // Route user
-const User = require("./database/models/User"); // Model User
+const userRoutes = require("./routes/user"); // Đường dẫn route user
+const User = require("./database/models/user"); // Model User
 
 const app = express();
 
-// ✅ Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ Route chính
-app.use("/api/users", userRoutes);
+app.use('/api', userRoutes);
+
+const port = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
+const cors = require('cors');
+app.use(cors());
+app.use(express.json());
+
+// ✅ Tạo route gốc /api
+app.use('/api/users', userRoutes);
+
 
 // ✅ Kết nối MongoDB Atlas
-const MONGO_URI = process.env.MONGO_URI;
 mongoose
   .connect(MONGO_URI)
   .then(() => console.log("✅ Đã kết nối MongoDB Atlas thành công!"))
@@ -30,14 +39,14 @@ mongoose.connection.on("connected", () => console.log("🔗 MongoDB connected"))
 mongoose.connection.on("error", (err) => console.error("❌ MongoDB error:", err));
 mongoose.connection.on("disconnected", () => console.log("⚠️ MongoDB disconnected"));
 
-// ✅ Middleware log request
+// Middleware log mỗi request
 app.use((req, res, next) => {
   console.log(`➡️ ${req.method} ${req.url}`);
   if (Object.keys(req.body).length > 0) console.log("📦 Body:", req.body);
   next();
 });
 
-// ✅ Route kiểm tra server
+// ✅ Route mẫu kiểm tra server
 app.get("/", (req, res) => {
   res.send("🚀 Server is running!");
 });
@@ -52,8 +61,16 @@ app.get("/users", async (req, res) => {
   }
 });
 
-// ✅ Khởi động server
+// Chạy server
+console.log("✅ Server connected and running on http://localhost:" + PORT);
+
+
+
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ Server connected and running on http://localhost:${PORT}`);
+console.log("✅ Server connected and running on http://localhost:" + PORT);
+
+
+
 });
