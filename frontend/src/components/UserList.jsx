@@ -1,59 +1,115 @@
+// src/components/UserList.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaUser, FaEnvelope } from "react-icons/fa";
+import { API } from "../App";
 
 export default function UserList() {
   const [users, setUsers] = useState([]);
-  const API = "http://localhost:3000/users";
+  const [editingUser, setEditingUser] = useState(null);
+  const [editName, setEditName] = useState("");
 
-  const loadUsers = async () => {
+  // 📌 Lấy danh sách user từ backend
+  const fetchUsers = async () => {
     try {
-      const res = await axios.get(API);
+      const res = await axios.get(`${API}/users`);
       setUsers(res.data);
     } catch (err) {
-      console.error("Lỗi load users:", err);
+      console.error(err);
+      alert("❌ Lỗi tải danh sách user!");
     }
   };
 
   useEffect(() => {
-    loadUsers();
-
-    const handler = (e) => {
-      const added = e.detail;
-      if (added && added.id) setUsers((prev) => [...prev, added]);
-      else loadUsers();
-    };
-    window.addEventListener("userAdded", handler);
-    return () => window.removeEventListener("userAdded", handler);
+    fetchUsers();
+    window.addEventListener("userUpdated", fetchUsers);
+    return () => window.removeEventListener("userUpdated", fetchUsers);
   }, []);
 
+  // 🗑️ Xóa user
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc muốn xóa user này không?")) return;
+    try {
+      await axios.delete(`${API}/users/${id}`);
+      setUsers(users.filter((u) => u.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("❌ Lỗi khi xóa user!");
+    }
+  };
+
+  // ✏️ Bắt đầu sửa user
+  const handleEdit = (user) => {
+    setEditingUser(user);
+    setEditName(user.name);
+  };
+
+  // 💾 Lưu thay đổi (PUT)
+  const handleUpdate = async () => {
+    try {
+      const res = await axios.put(`${API}/users/${editingUser.id}`, {
+        name: editName,
+      });
+      // Cập nhật lại danh sách sau khi sửa
+      setUsers(
+        users.map((u) => (u.id === editingUser.id ? res.data : u))
+      );
+      setEditingUser(null);
+      setEditName("");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Lỗi khi cập nhật user!");
+    }
+  };
+
   return (
-    <div className="card">
-      <h2 className="card-title">📋 Danh sách User</h2>
+    <div className="card" style={{ padding: 20 }}>
+      <h2>📋 Danh sách User</h2>
 
       {users.length === 0 ? (
-        <p className="muted">Chưa có user nào — hãy thêm thử.</p>
+        <p>Chưa có user nào</p>
       ) : (
-        <table className="user-table">
-          <thead>
-            <tr>
-              <th>Họ tên</th>
-              <th>Email</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td className="name-cell">
-                  <FaUser className="icon-inline" /> {u.name}
-                </td>
-                <td>
-                  <FaEnvelope className="icon-inline" /> {u.email}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {users.map((u) => (
+            <li key={u.id} style={{ marginBottom: 10 }}>
+              {editingUser && editingUser.id === u.id ? (
+                <>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    style={{ marginRight: 8 }}
+                  />
+                  <button onClick={handleUpdate}>💾 Lưu</button>
+                  <button
+                    onClick={() => {
+                      setEditingUser(null);
+                      setEditName("");
+                    }}
+                    style={{ marginLeft: 4 }}
+                  >
+                    ❌ Hủy
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span>{u.name}</span>
+                  <button
+                    onClick={() => handleEdit(u)}
+                    style={{ marginLeft: 10 }}
+                  >
+                    ✏️ Sửa
+                  </button>
+                  <button
+                    onClick={() => handleDelete(u.id)}
+                    style={{ marginLeft: 5 }}
+                  >
+                    🗑️ Xóa
+                  </button>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

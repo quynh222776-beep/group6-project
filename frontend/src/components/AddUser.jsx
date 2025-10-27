@@ -1,50 +1,74 @@
+// src/components/AddUser.jsx
 import React, { useState } from "react";
-import axios from "axios";
-import { FaPlus } from "react-icons/fa";
+import { API } from "../App";
 
 export default function AddUser() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const API = "http://localhost:3000/users";
 
-  const handleSubmit = async (e) => {
+  // ✅ Hàm thêm user có validation
+  const handleAdd = async (e) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) {
-      alert("Vui lòng nhập tên và email.");
+
+    // --- Validation dữ liệu ---
+    if (!name.trim()) {
+      alert("⚠️ Tên không được để trống!");
       return;
     }
+    if (!email.trim()) {
+      alert("⚠️ Email không được để trống!");
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      alert("⚠️ Email không hợp lệ!");
+      return;
+    }
+
     try {
-      const res = await axios.post(API, { name, email });
-      window.dispatchEvent(new CustomEvent("userAdded", { detail: res.data }));
+      const res = await fetch(`${API}/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email }),
+      });
+
+      if (!res.ok) throw new Error("Thêm user thất bại");
+
+      const newUser = await res.json();
+      alert(`✅ Đã thêm user: ${newUser.name}`);
+
+      // Reset form
       setName("");
       setEmail("");
+
+      // Reload danh sách user
+      window.dispatchEvent(new Event("userUpdated"));
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi thêm user. Kiểm tra backend.");
+      alert("❌ Lỗi khi thêm user!");
     }
   };
 
   return (
     <div className="card">
-      <h2 className="card-title"><FaPlus /> Thêm User</h2>
-
-      <form className="form" onSubmit={handleSubmit}>
+      <h2>➕ Thêm User</h2>
+      <form onSubmit={handleAdd}>
         <input
-          className="input"
+          type="text"
+          placeholder="Nhập tên user..."
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Họ tên"
-          required
+          className="input"
         />
         <input
-          className="input"
+          type="email"
+          placeholder="Nhập email..."
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          type="email"
-          required
+          className="input"
         />
-        <button className="btn" type="submit"><FaPlus /> Thêm</button>
+        <button type="submit" className="btn">
+          Thêm
+        </button>
       </form>
     </div>
   );
