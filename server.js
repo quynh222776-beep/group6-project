@@ -6,7 +6,11 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 // Import model User
+<<<<<<< HEAD
 const User = require("./database/models/user");
+=======
+const User = require("./database/models/User");
+>>>>>>> backend
 
 const app = express();
 app.use(express.json());
@@ -50,4 +54,9 @@ app.get("/users", async (req, res) => {
 });
 
 // Chạy server
+<<<<<<< HEAD
 app.listen(PORT, () => console.log(`🌍 Server đang chạy tại http://localhost:${PORT}`));
+=======
+app.listen(PORT, () => console.log(`🌍 Server đang chạy tại http://localhost:${PORT}`));
+// code từ nhánh database (Khanh)
+>>>>>>> backend
