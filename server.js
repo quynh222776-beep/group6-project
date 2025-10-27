@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 // ✅ Import routes & models
-const userRoutes = require("./routes/user"); // Đường dẫn route user
+const userRoutes = require("./routes/user"); // Route user
 const User = require("./database/models/User"); // Model User
 
 const app = express();
@@ -25,7 +25,7 @@ mongoose
   .then(() => console.log("✅ Đã kết nối MongoDB Atlas thành công!"))
   .catch((err) => console.error("❌ Lỗi kết nối MongoDB:", err));
 
-// ✅ Theo dõi trạng thái kết nối MongoDB
+// Theo dõi trạng thái connection (debug)
 mongoose.connection.on("connected", () => console.log("🔗 MongoDB connected"));
 mongoose.connection.on("error", (err) => console.error("❌ MongoDB error:", err));
 mongoose.connection.on("disconnected", () => console.log("⚠️ MongoDB disconnected"));
@@ -37,7 +37,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Route test
+// ✅ Route kiểm tra server
 app.get("/", (req, res) => {
   res.send("🚀 Server is running!");
 });
