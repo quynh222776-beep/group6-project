@@ -1,10 +1,4 @@
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
 # README_Khanh.md
-=======
->>>>>>> 7a11be0 (Cập nhật User model và server.js)
->>>>>>> frontend
 # Vai trò: Database Developer
 
 ## Công nghệ sử dụng
@@ -18,11 +12,5 @@
 - Tạo dữ liệu mẫu (seed data) cho dự án.  
 - Kiểm tra và tối ưu truy vấn dữ liệu.  
 - Hỗ trợ backend trong việc truy cập, validate và xử lý dữ liệu.
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 7a11be0 (Cập nhật User model và server.js)
->>>>>>> frontend
