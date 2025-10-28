@@ -1,32 +1,66 @@
-# 🏪 Group 6 Project – Quản lý cửa hàng
+# \# 🚀 DỰ ÁN QUẢN LÝ NGƯỜI DÙNG (Group 8 - DH22TIN02)
 
-## 💡 Giới thiệu
-Dự án mô phỏng hệ thống quản lý cửa hàng, bao gồm frontend, backend và database.
+# 
 
-## ⚙️ Công nghệ sử dụng
-- **Frontend:** ReactJS (Hân)  
-- **Backend:** Node.js (Express) (Quỳnh)  
-- **Database:** MongoDB Atlas (Khanh)
+# \## 🎯 Giới thiệu dự án
 
-## 🧩 Cách chạy dự án
-# Nhóm 6 – Dự án Quản lý Công việc
+# Dự án này là sản phẩm cuối kỳ của \*\*Nhóm 8 - Lớp DH22TIN02\*\*, môn \*\*Thực hành Công nghệ phần mềm\*\*.  
 
-## Mô tả dự án
-Dự án quản lý công việc, frontend, backend, database.
+# Mục tiêu của dự án là \*\*xây dựng hệ thống quản lý người dùng (User Management System)\*\* với các chức năng CRUD (Create, Read, Update, Delete), kết nối \*\*Frontend – Backend – Database (MongoDB Atlas)\*\*.
 
-## Công nghệ sử dụng
-- Frontend: React
-- Backend: Node.js, Express
-- Database: SQL Server / MySQL
-- GitHub để quản lý code
+# 
 
-## Hướng dẫn chạy
-1. Clone repository
-2. Chạy backend: node server.js
-3. Chạy frontend: npm install → npm start
+# ---
 
-## Đóng góp từng thành viên
-- Han: Frontend & README
-- Quynh: Backend & API
-- Khanh: UI & tổng hợp README
+# 
+
+# \## ⚙️ Công nghệ sử dụng
+
+# \### \*\*Frontend\*\*
+
+# \- ReactJS (Vite)
+
+# \- Axios để gọi API
+
+# \- TailwindCSS cho giao diện
+
+# \- Component tự xây dựng: `AddUser`, `UserList`
+
+# 
+
+# \### \*\*Backend\*\*
+
+# \- Node.js \& Express.js
+
+# \- Mongoose (kết nối MongoDB Atlas)
+
+# \- Dotenv để quản lý biến môi trường
+
+# \- CORS cho phép truy cập từ frontend
+
+# 
+
+# \### \*\*Database\*\*
+
+# \- MongoDB Atlas (Cloud Database)
+
+# \- Bộ sưu tập (Collection): `users`
+
+# \- Mỗi user gồm các trường:  
+
+# &nbsp; ```js
+
+# &nbsp; {
+
+# &nbsp;   \_id: ObjectId,
+
+# &nbsp;   name: String,
+
+# &nbsp;   email: String,
+
+# &nbsp;   age: Number
+
+# &nbsp; }
+
+
 
