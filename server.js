@@ -8,7 +8,7 @@ const cors = require("cors");
 
 // Import model User
 const User = require("./database/models/User");
-=======
+
 const express = require('express');
 const dotenv = require('dotenv');
 const userRoutes = require('./routes/user'); // ✅ Đường dẫn đúng
@@ -61,7 +61,7 @@ app.get("/users", async (req, res) => {
 // Chạy server
 console.log("✅ Server connected and running on http://localhost:" + PORT);
 
-=======
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
