@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 // server.js
 require("dotenv").config(); // Đọc biến môi trường từ .env
 
@@ -14,7 +14,7 @@ const dotenv = require('dotenv');
 const userRoutes = require('./routes/user'); // ✅ Đường dẫn đúng
 
 dotenv.config();
->>>>>>> frontend
+
 
 const app = express();
 const cors = require('cors');
@@ -24,7 +24,7 @@ app.use(express.json());
 // ✅ Tạo route gốc /api
 app.use('/api/users', userRoutes);
 
-<<<<<<< HEAD
+
 // ✅ Kết nối MongoDB Atlas
 mongoose
   .connect(MONGO_URI)
@@ -70,4 +70,4 @@ console.log("✅ Server connected and running on http://localhost:" + PORT);
 
 
 });
->>>>>>> frontend
+
