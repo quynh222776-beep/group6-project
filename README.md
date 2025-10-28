@@ -29,4 +29,4 @@ Dự án quản lý công việc, frontend, backend, database.
 - Han: Frontend & README
 - Quynh: Backend & API
 - Khanh: UI & tổng hợp README
->>>>>>> origin/frontend
+

@@ -5,14 +5,12 @@ import { FaPlus } from "react-icons/fa";
 export default function AddUser() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-<<<<<<< HEAD
   const API = "http://localhost:3000/users";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) {
       alert("Vui lòng nhập tên và email.");
-=======
 
   // ✅ Hàm thêm user có validation
   const handleAdd = async (e) => {
@@ -29,16 +27,13 @@ export default function AddUser() {
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
       alert("⚠️ Email không hợp lệ!");
->>>>>>> backend-update
       return;
     }
     try {
-<<<<<<< HEAD
       const res = await axios.post(API, { name, email });
       window.dispatchEvent(new CustomEvent("userAdded", { detail: res.data }));
       setName("");
       setEmail("");
-=======
       const res = await fetch(`${API}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,7 +51,6 @@ export default function AddUser() {
 
       // Reload danh sách user
       window.dispatchEvent(new Event("userUpdated"));
->>>>>>> backend-update
     } catch (err) {
       console.error(err);
       alert("Lỗi khi thêm user. Kiểm tra backend.");
@@ -65,7 +59,6 @@ export default function AddUser() {
 
   return (
     <div className="card">
-<<<<<<< HEAD
       <h2 className="card-title"><FaPlus /> Thêm User</h2>
 
       <form className="form" onSubmit={handleSubmit}>
@@ -105,7 +98,6 @@ export default function AddUser() {
         <button type="submit" className="btn">
           Thêm
         </button>
->>>>>>> backend-update
       </form>
     </div>
   );
