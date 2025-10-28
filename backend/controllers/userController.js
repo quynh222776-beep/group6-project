@@ -1,6 +1,7 @@
 const User = require("../../database/models/user");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
+
 
 // Đăng ký
 const signup = async (req, res) => {

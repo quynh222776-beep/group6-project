@@ -1,10 +1,8 @@
-
-// server.js
-require("dotenv").config(); // Đọc biến môi trường từ .env
-
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+
 
 // Import model User
 const User = require("./database/models/User");
@@ -16,34 +14,39 @@ const userRoutes = require('./routes/user'); // ✅ Đường dẫn đúng
 dotenv.config();
 
 
+const authRoutes = require("./backend/routes/auth");
+
+
 const app = express();
-const cors = require('cors');
+const PORT = process.env.PORT || 5000;
+
 app.use(cors());
 app.use(express.json());
 
-// ✅ Tạo route gốc /api
-app.use('/api/users', userRoutes);
-
-
-// ✅ Kết nối MongoDB Atlas
+// Kết nối MongoDB Atlas
 mongoose
-  .connect(MONGO_URI)
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Đã kết nối MongoDB Atlas thành công!"))
   .catch((err) => console.error("❌ Lỗi kết nối MongoDB:", err));
 
-// Theo dõi trạng thái connection (debug)
-mongoose.connection.on("connected", () => console.log("🔗 MongoDB connected"));
-mongoose.connection.on("error", (err) => console.error("❌ MongoDB error:", err));
-mongoose.connection.on("disconnected", () => console.log("⚠️ MongoDB disconnected"));
-
-// Middleware log mỗi request
+// Middleware log request an toàn
 app.use((req, res, next) => {
   console.log(`➡️ ${req.method} ${req.url}`);
-  if (Object.keys(req.body).length > 0) console.log("📦 Body:", req.body);
+
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log("📦 Body:", req.body);
+  }
+  if (req.query && Object.keys(req.query).length > 0) {
+    console.log("🔍 Query:", req.query);
+  }
+
   next();
 });
 
-// ✅ Route mẫu kiểm tra server
+// Routes
+app.use("/api/auth", authRoutes);
+
+// Route test server
 app.get("/", (req, res) => {
   res.send("🚀 Server is running!");
 });
@@ -59,6 +62,7 @@ app.get("/users", async (req, res) => {
 });
 
 // Chạy server
+
 console.log("✅ Server connected and running on http://localhost:" + PORT);
 
 
@@ -70,4 +74,9 @@ console.log("✅ Server connected and running on http://localhost:" + PORT);
 
 
 });
+
+
+app.listen(PORT, () =>
+  console.log(`✅ Server running on http://localhost:${PORT}`)
+);
 
