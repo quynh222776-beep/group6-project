@@ -1,34 +1,48 @@
-// backend/server.js
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const userRoutes = require('./routes/user');
-const userRoutes = require('./routes/user'); // ✅ Đường dẫn chính xác
+// server.js
+require("dotenv").config(); // Đọc biến môi trường từ file .env
 
-dotenv.config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+
+const userRoutes = require("./routes/user"); // ✅ Import route user
+
 const app = express();
-const cors = require('cors');
-app.use(cors());
 
-app.use(express.json());
-
-// ✅ Tạo route gốc /api
-app.use('/api/users', userRoutes);
+// ✅ Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ Route gốc
-app.use('/api', userRoutes);
-
-// ✅ Test route (để kiểm tra server hoạt động)
-app.get('/', (req, res) => {
-  res.send('✅ Server is running...');
+// ✅ Log mỗi request (debug)
+app.use((req, res, next) => {
+  console.log(`➡️ ${req.method} ${req.url}`);
+  if (Object.keys(req.body).length > 0) {
+    console.log("📦 Body:", req.body);
+  }
+  next();
 });
 
+// ✅ Kết nối MongoDB Atlas
+const MONGO_URI = process.env.MONGO_URI;
+mongoose
+  .connect(MONGO_URI)
+  .then(() => console.log("✅ Đã kết nối MongoDB Atlas thành công!"))
+  .catch((err) => console.error("❌ Lỗi kết nối MongoDB:", err));
+
+mongoose.connection.on("connected", () => console.log("🔗 MongoDB connected"));
+mongoose.connection.on("error", (err) => console.error("❌ MongoDB error:", err));
+mongoose.connection.on("disconnected", () => console.log("⚠️ MongoDB disconnected"));
+
+// ✅ Route kiểm tra server
+app.get("/", (req, res) => {
+  res.send("🚀 Server is running!");
+});
+
+// ✅ Sử dụng route user
+app.use("/api/users", userRoutes);
+
+// ✅ Khởi động server
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running at http://localhost:${PORT}`);
 });
-
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
