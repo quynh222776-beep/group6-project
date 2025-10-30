@@ -13,4 +13,4 @@
 - Kiểm tra và tối ưu truy vấn dữ liệu.  
 - Hỗ trợ backend trong việc truy cập, validate và xử lý dữ liệu.
 
-
+- Hỗ trợ backend trong việc truy cập, validate và xử lý dữ liệu.

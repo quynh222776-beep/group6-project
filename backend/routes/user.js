@@ -1,14 +1,70 @@
-
-
-const express = require('express');
+// ===== IMPORTS =====
+const express = require("express");
 const router = express.Router();
-const userController = require('../controllers/userController');
+const bcrypt = require("bcryptjs");
 
-// ✅ Các route CRUD
-router.get('/users', userController.getUsers);        // Lấy danh sách user
-router.post('/users', userController.createUser);     // Thêm user mới
-router.put('/users/:id', userController.updateUser);  // Sửa user theo id
-router.delete('/users/:id', userController.deleteUser); // Xóa user theo id
+const User = require("../models/User");
+const { verifyToken, isAdmin } = require("../middleware/authMiddleware");
 
+// =============================
+// 1️⃣ ADMIN: Lấy danh sách tất cả người dùng
+// =============================
+router.get("/", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// =============================
+// 2️⃣ USER: Xem thông tin cá nhân
+// =============================
+router.get("/me", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// =============================
+// 3️⃣ USER: Cập nhật thông tin cá nhân
+// =============================
+router.put("/me", verifyToken, async (req, res) => {
+  try {
+    const { name, password } = req.body;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
+
+    if (name) user.name = name;
+    if (password) user.password = await bcrypt.hash(password, 10);
+
+    await user.save();
+
+    res.json({
+      message: "Cập nhật thành công",
+      user: { id: user._id, name: user.name, email: user.email },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// =============================
+// 4️⃣ ADMIN: Xóa người dùng theo ID
+// =============================
+router.delete("/:id", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    res.json({ message: "Đã xóa người dùng thành công" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 module.exports = router;

@@ -1,55 +1,51 @@
-
 // backend/controllers/userController.js
 const User = require("../../database/models/user");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
+console.log("Cloud Name:", process.env.CLOUDINARY_CLOUD_NAME);
+console.log("API Key:", process.env.CLOUDINARY_API_KEY);
+console.log("API Secret:", process.env.CLOUDINARY_API_SECRET ? "✅ OK" : "❌ Missing");
 
-// Lấy tất cả user
-exports.getUsers = async (req, res) => {
+// Middleware xác thực token
+exports.authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "Chưa đăng nhập" });
+
   try {
-    const users = await User.find();
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(403).json({ message: "Token không hợp lệ" });
+  }
+};
+
+// Lấy danh sách user (Admin)
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
     res.json(users);
   } catch (err) {
-    res.status(500).json({ message: "Lỗi lấy danh sách users", error: err });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// Thêm user mới
-exports.createUser = async (req, res) => {
-  try {
-    const newUser = new User(req.body);
-    await newUser.save();
-    res.json({ message: "✅ Thêm user thành công", user: newUser });
-  } catch (err) {
-    res.status(400).json({ message: "❌ Lỗi khi thêm user", error: err });
-  }
-};
-
-// Cập nhật user theo ID
-exports.updateUser = async (req, res) => {
-  try {
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ message: "✅ Cập nhật user thành công", user: updatedUser });
-  } catch (err) {
-    res.status(400).json({ message: "❌ Lỗi khi cập nhật user", error: err });
-  }
-};
-
-// Xóa user theo ID
+// Xóa user
 exports.deleteUser = async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "✅ Xóa user thành công" });
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
+
+    await user.deleteOne();
+    res.json({ message: "Đã xóa user thành công" });
   } catch (err) {
-    res.status(400).json({ message: "❌ Lỗi khi xóa user", error: err });
+    res.status(500).json({ message: err.message });
   }
 };
-const User = require("../../database/models/user");
-const bcrypt = require("bcrypt");
-const jwt = require('jsonwebtoken');
-
 
 // Đăng ký
-const signup = async (req, res) => {
+exports.signup = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
@@ -72,7 +68,7 @@ const signup = async (req, res) => {
 };
 
 // Đăng nhập
-const login = async (req, res) => {
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -94,10 +90,7 @@ const login = async (req, res) => {
   }
 };
 
-// Đăng xuất (client xóa token)
-const logout = async (req, res) => {
+// Đăng xuất
+exports.logout = async (req, res) => {
   res.json({ message: "Đăng xuất thành công (client xóa token)" });
 };
-
-module.exports = { signup, login, logout };
-
