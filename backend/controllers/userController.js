@@ -1,33 +1,44 @@
-// controllers/userController.js
+console.log("Cloud Name:", process.env.CLOUDINARY_CLOUD_NAME);
+console.log("API Key:", process.env.CLOUDINARY_API_KEY);
+console.log("API Secret:", process.env.CLOUDINARY_API_SECRET ? "✅ OK" : "❌ Missing");
 
-let users = [
-  { id: 1, name: "Quỳnh" },
-  { id: 2, name: "Hân" },
-  { id: 3, name: "Khanh" },
-];
+const User = require("../models/User");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-const getUsers = (req, res) => res.json(users);
+// Middleware xác thực token
+exports.authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "Chưa đăng nhập" });
 
-const addUser = (req, res) => {
-  const { name } = req.body;
-  if (!name) return res.status(400).json({ message: "Name is required" });
-  const newUser = { id: users.length + 1, name };
-  users.push(newUser);
-  res.status(201).json(newUser);
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(403).json({ message: "Token không hợp lệ" });
+  }
 };
 
-const updateUser = (req, res) => {
-  const { id } = req.params;
-  const index = users.findIndex((u) => u.id == id);
-  if (index === -1) return res.status(404).json({ message: "User not found" });
-  users[index] = { ...users[index], ...req.body };
-  res.json(users[index]);
+// Lấy danh sách user (Admin)
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
-const deleteUser = (req, res) => {
-  const { id } = req.params;
-  users = users.filter((u) => u.id != id);
-  res.json({ message: "User deleted" });
-};
+// Xóa user
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
 
-module.exports = { getUsers, addUser, updateUser, deleteUser };
+    await user.deleteOne();
+    res.json({ message: "Đã xóa user thành công" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
