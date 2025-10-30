@@ -1,14 +1,20 @@
 const express = require("express");
 const router = express.Router();
-const { signup, login, logout } = require("../controllers/authController");
+const authController = require("../controllers/authController");
 
 // Đăng ký
-router.post("/signup", signup);
+router.post("/signup", authController.signup);
 
 // Đăng nhập
-router.post("/login", login);
+router.post("/login", authController.login);
 
 // Đăng xuất
-router.post("/logout", logout);
+router.post("/logout", authController.logout);
+
+// Quên mật khẩu
+router.post("/forgot-password", authController.forgotPassword);
+
+// Đặt lại mật khẩu
+router.post("/reset-password", authController.resetPassword);
 
 module.exports = router;
