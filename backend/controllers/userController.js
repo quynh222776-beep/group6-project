@@ -1,38 +1,44 @@
-// controllers/userController.js
+console.log("Cloud Name:", process.env.CLOUDINARY_CLOUD_NAME);
+console.log("API Key:", process.env.CLOUDINARY_API_KEY);
+console.log("API Secret:", process.env.CLOUDINARY_API_SECRET ? "✅ OK" : "❌ Missing");
 
-let users = []; // Mảng tạm lưu user
+const User = require("../models/User");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-// GET /users - lấy danh sách user
-const getUsers = (req, res) => {
-  res.json(users);
-};
+// Middleware xác thực token
+exports.authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "Chưa đăng nhập" });
 
-// POST /users - thêm user mới
-const createUser = (req, res) => {
-  const newUser = { id: Date.now(), ...req.body };
-  users.push(newUser);
-  res.status(201).json(newUser);
-};
-
-// PUT /users/:id - sửa user
-const updateUser = (req, res) => {
-  const { id } = req.params;
-  const index = users.findIndex((u) => u.id == id);
-  if (index !== -1) {
-    users[index] = { ...users[index], ...req.body };
-    res.json(users[index]);
-  } else {
-    res.status(404).json({ message: "User not found" });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(403).json({ message: "Token không hợp lệ" });
   }
 };
 
-// DELETE /users/:id - xóa user
-const deleteUser = (req, res) => {
-  const { id } = req.params;
-  users = users.filter((u) => u.id != id);
-  res.json({ message: "User deleted" });
+// Lấy danh sách user (Admin)
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
-// ✅ Xuất ra đúng cách:
-module.exports = { getUsers, createUser, updateUser, deleteUser };
-// Hoạt động 7 - API PUT/DELETE User hoàn tất
+// Xóa user
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
+
+    await user.deleteOne();
+    res.json({ message: "Đã xóa user thành công" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

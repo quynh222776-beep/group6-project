@@ -1,0 +1,25 @@
+[33m9c7be44[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfrontend[m[33m)[m Frontend: update server log message
+[33mbdf3253[m Commit các thay đổi chưa staged
+[33m8872aa1[m[33m ([m[1;31morigin/frontend[m[33m)[m hợp nhất commit & xử lý xung đột frontend
+[33m8e144b8[m Commit các thay đổi chưa lưu
+[33mee52bd5[m[33m ([m[1;32mbackend[m[33m)[m Thêm code từ nhánh database (Khanh)
+[33m1be788a[m Cập nhật User model và server.js
+[33m10dbdd6[m Update README_Khanh.md
+[33m904578a[m Thêm validation form và quản lý state nâng cao
+[33m7e8fed0[m Thêm chức năng Sửa/Xóa user trên React
+[33m3ec5929[m Merge branch 'frontend' of https://github.com/quynh222776-beep/group6-project into frontend
+[33m2816240[m Hoạt động 6: Kết nối frontend với MongoDB
+[33m6716241[m Đổi tên thư mục backend thành database
+[33m3332e58[m Chỉnh sửa App.js bên frontend để tạo conflict
+[33ma66a8e8[m fix: chỉnh port từ 3004 sang 3000 cho API
+[33m5cb03e7[m chore: chỉnh nhẹ README để tạo Pull Request
+[33m69d808a[m Hoạt động 5: Tích hợp MongoDB Atlas (User model + API)
+[33m39a761e[m chore: cập nhật README_Han trước khi merge
+[33mf13f5f3[m Thêm README_Khanh.md mô tả vai trò sinh viên 3 (database)
+[33mb54cb45[m[33m ([m[1;31morigin/frontend-han[m[33m)[m Hoàn thành Hoạt động 4 - Giao diện và kết nối API GET/POST
+[33m3db758d[m Move README_Han.md to repository root (theo yêu cầu nộp)
+[33m8838e95[m Thêm README_Han.md mô tả vai trò frontend
+[33m42650b6[m Khởi tạo ứng dụng React cho frontend
+[33me085506[m Thêm README_Quynh.md cho backend
+[33mc1ea631[m Khởi tạo backend và cấu trúc dự án
+[33m134f62a[m Khởi tạo backend và cấu trúc dự án
