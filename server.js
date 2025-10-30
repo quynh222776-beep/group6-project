@@ -1,49 +1,51 @@
-
-// server.js
-require("dotenv").config(); // Đọc biến môi trường từ .env
-
+// ====== IMPORT MODULES ======
+require("dotenv").config(); // Đọc biến môi trường từ file .env
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const userRoutes = require("./backend/routes/user"); // ✅ route
+// ====== IMPORT ROUTES ======
+const authRoutes = require("./backend/routes/auth");
+const userRoutes = require("./backend/routes/user");
 
+// ====== KHỞI TẠO APP ======
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-// ✅ Middleware
+// ====== MIDDLEWARE ======
 app.use(cors());
 app.use(express.json());
 
-// ✅ Middleware log request
+// ====== LOG REQUEST ======
 app.use((req, res, next) => {
   console.log(`➡️ ${req.method} ${req.url}`);
-  if (Object.keys(req.body).length > 0) console.log("📦 Body:", req.body);
+  if (req.body && Object.keys(req.body).length > 0) console.log("📦 Body:", req.body);
+  if (req.query && Object.keys(req.query).length > 0) console.log("🔍 Query:", req.query);
   next();
 });
 
-// ✅ Route gốc kiểm tra server
-app.get("/", (req, res) => {
-  res.send("🚀 Server is running!");
-});
-
-// ✅ Sử dụng route user
-app.use("/api/users", userRoutes);
-
-
-// ✅ Kết nối MongoDB Atlas
+// ====== KẾT NỐI MONGODB ATLAS ======
 const MONGO_URI = process.env.MONGO_URI;
 mongoose
   .connect(MONGO_URI)
   .then(() => console.log("✅ Đã kết nối MongoDB Atlas thành công!"))
   .catch((err) => console.error("❌ Lỗi kết nối MongoDB:", err));
 
-// ✅ Theo dõi trạng thái MongoDB
+// ====== THEO DÕI TRẠNG THÁI MONGODB ======
 mongoose.connection.on("connected", () => console.log("🔗 MongoDB connected"));
 mongoose.connection.on("error", (err) => console.error("❌ MongoDB error:", err));
 mongoose.connection.on("disconnected", () => console.log("⚠️ MongoDB disconnected"));
 
-// ✅ Khởi động server
-const PORT = process.env.PORT || 5000;
+// ====== ROUTES ======
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+
+// Route test server
+app.get("/", (req, res) => {
+  res.send("🚀 Server is running!");
+});
+
+// ====== KHỞI ĐỘNG SERVER ======
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
