@@ -3,6 +3,20 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+const mongoose = require('mongoose');
+require('dotenv').config();
+const User = require('./models/User');
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(async () => {
+    await User.deleteMany();
+    await User.create([
+      { username: 'admin', email: 'admin@example.com', password: '123456', role: 'admin' },
+      { username: 'user', email: 'user@example.com', password: '123456', role: 'user' }
+    ]);
+    console.log('Seed done'); process.exit();
+  }).catch(console.error);
+
 /* ============ Đăng ký ============ */
 exports.signup = async (req, res) => {
   try {
