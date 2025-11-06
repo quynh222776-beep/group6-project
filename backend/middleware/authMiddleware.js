@@ -11,18 +11,18 @@ const verifyToken = (req, res, next) => {
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
+    req.user = decoded; // id, email
     next();
   } catch (error) {
-    return res.status(403).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
+    return res.status(403).json({ message: "Token không hợp lệ hoặc hết hạn" });
   }
 };
 
 // ✅ Kiểm tra quyền admin
 const isAdmin = async (req, res, next) => {
   try {
-    const user = await User.findById(req.userId);
-    if (user.role !== "admin") {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== "admin") {
       return res.status(403).json({ message: "Bạn không có quyền admin" });
     }
     next();

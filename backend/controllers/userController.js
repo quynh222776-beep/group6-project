@@ -1,5 +1,5 @@
 // backend/controllers/userController.js
-const User = require("../../database/models/user");
+const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -38,13 +38,17 @@ exports.getAllUsers = async (req, res) => {
 // 🗑️ Xóa user
 exports.deleteUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
+    const userId = req.user.id; // Lấy ID từ token
 
-    await user.deleteOne();
-    res.json({ message: "Đã xóa user thành công" });
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng!" });
+    }
+
+    res.json({ message: "Xóa tài khoản thành công!" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("❌ Lỗi xóa tài khoản:", err);
+    res.status(500).json({ message: "Lỗi server khi xóa tài khoản!" });
   }
 };
 

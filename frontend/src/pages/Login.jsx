@@ -1,29 +1,86 @@
-import React, { useState } from 'react';
-import API from '../services/api';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "../App.css";
 
-export default function Login() {
-  const [form, setForm] = useState({ email:'', password:'' });
-  const handleChange = e => setForm({...form, [e.target.name]: e.target.value});
+export default function Login({ setIsLoggedIn }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = async e => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (!email || !password) {
+      alert("Vui lòng nhập đầy đủ thông tin!");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const res = await API.post('/login', form);
-      alert(res.data.message);
-      // Lưu token
-      if (res.data.token) localStorage.setItem('token', res.data.token);
-      // (optional) lưu user info: localStorage.setItem('user', JSON.stringify(res.data.user));
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      console.log("📩 Login result:", data);
+
+      if (!res.ok) {
+        alert(data.message || "Đăng nhập thất bại!");
+        return;
+      }
+
+      // ✅ Lưu token, user và role
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("isLoggedIn", "true");
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("role", data.user.role); // thêm role
+      }
+
+      setIsLoggedIn(true);
+      alert(`Chào mừng ${data.user?.username || "bạn"}!`);
+
+      // ✅ Chuyển hướng tới trang Home (hiển thị danh sách user)
+      navigate("/home");
     } catch (err) {
-      alert(err.response?.data?.message || 'Lỗi đăng nhập');
+      console.error("❌ Lỗi login:", err);
+      alert("Không thể kết nối server!");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Login</h2>
-      <input name="email" placeholder="Email" onChange={handleChange} value={form.email} />
-      <input name="password" type="password" placeholder="Password" onChange={handleChange} value={form.password} />
-      <button type="submit">Login</button>
-    </form>
+    <div className="center-container">
+      <div className="form-box">
+        <h2>Đăng nhập</h2>
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Mật khẩu"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit" className="btn" disabled={loading}>
+            {loading ? "⏳ Đang xử lý..." : "🔑 Đăng nhập"}
+          </button>
+        </form>
+        <p>
+          Chưa có tài khoản? <Link to="/signup">Đăng ký</Link>
+        </p>
+      </div>
+    </div>
   );
 }
