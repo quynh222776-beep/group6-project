@@ -1,112 +1,155 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { FaPlus } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaUserPlus, FaSignInAlt } from "react-icons/fa";
 
-export default function AddUser() {
+export default function AuthForm() {
+  // -------------------- STATE --------------------
+  const [isLogin, setIsLogin] = useState(false); // false = đăng ký, true = đăng nhập
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-<<<<<<< HEAD
-  const API = "http://localhost:3000/users";
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
+  // Đường dẫn backend API (bạn giữ nguyên nếu server chạy localhost:5000)
+  const API = "http://localhost:5000/api/auth";
+
+  // -------------------- HANDLE SUBMIT --------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) {
-      alert("Vui lòng nhập tên và email.");
-=======
 
-  // ✅ Hàm thêm user có validation
-  const handleAdd = async (e) => {
-    e.preventDefault();
+    // Kiểm tra dữ liệu đầu vào
+    if (!email.trim() || !password.trim()) {
+      alert("⚠️ Vui lòng nhập đầy đủ Email và Mật khẩu!");
+      return;
+    }
 
-    // --- Validation dữ liệu ---
-    if (!name.trim()) {
-      alert("⚠️ Tên không được để trống!");
-      return;
-    }
-    if (!email.trim()) {
-      alert("⚠️ Email không được để trống!");
-      return;
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      alert("⚠️ Email không hợp lệ!");
->>>>>>> backend-update
-      return;
-    }
     try {
-<<<<<<< HEAD
-      const res = await axios.post(API, { name, email });
-      window.dispatchEvent(new CustomEvent("userAdded", { detail: res.data }));
-      setName("");
-      setEmail("");
-=======
-      const res = await fetch(`${API}/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email }),
-      });
+      if (isLogin) {
+        // ====== ĐĂNG NHẬP ======
+        const res = await axios.post(`${API}/login`, { email, password });
 
-      if (!res.ok) throw new Error("Thêm user thất bại");
+        if (res.data.token) {
+          // ✅ Lưu token
+          localStorage.setItem("token", res.data.token);
+          alert("✅ Đăng nhập thành công!");
 
-      const newUser = await res.json();
-      alert(`✅ Đã thêm user: ${newUser.name}`);
+          // ✅ Điều hướng theo role (nếu có)
+          if (res.data.user?.role === "admin") {
+            navigate("/users"); // Admin → trang quản lý người dùng
+          } else {
+            navigate("/profile"); // User thường → trang cá nhân
+          }
+        }
+      } else {
+        // ====== ĐĂNG KÝ ======
+        if (!name.trim()) {
+          alert("⚠️ Vui lòng nhập họ và tên!");
+          return;
+        }
+
+        // ⚠️ Sửa đúng endpoint: register (không phải signup)
+        const res = await axios.post(`${API}/register`, {
+          username: name, // hoặc "name" nếu backend dùng name
+          email,
+          password,
+        });
+
+        alert("🎉 Đăng ký thành công! Hãy đăng nhập.");
+        console.log(res.data);
+        setIsLogin(true); // Chuyển sang chế độ đăng nhập
+      }
 
       // Reset form
       setName("");
       setEmail("");
-
-      // Reload danh sách user
-      window.dispatchEvent(new Event("userUpdated"));
->>>>>>> backend-update
+      setPassword("");
     } catch (err) {
-      console.error(err);
-      alert("Lỗi khi thêm user. Kiểm tra backend.");
+      console.error("❌ Lỗi:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "❌ Có lỗi xảy ra từ server!");
     }
   };
 
+  // -------------------- UI --------------------
   return (
-    <div className="card">
-<<<<<<< HEAD
-      <h2 className="card-title"><FaPlus /> Thêm User</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-pink-100">
+      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 border border-pink-200">
+        <h2 className="text-2xl font-semibold text-center text-pink-600 mb-6">
+          {isLogin ? "Đăng nhập" : "Tạo tài khoản"}
+        </h2>
 
-      <form className="form" onSubmit={handleSubmit}>
-        <input
-          className="input"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Họ tên"
-          required
-        />
-        <input
-          className="input"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          type="email"
-          required
-        />
-        <button className="btn" type="submit"><FaPlus /> Thêm</button>
-=======
-      <h2>➕ Thêm User</h2>
-      <form onSubmit={handleAdd}>
-        <input
-          type="text"
-          placeholder="Nhập tên user..."
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="input"
-        />
-        <input
-          type="email"
-          placeholder="Nhập email..."
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="input"
-        />
-        <button type="submit" className="btn">
-          Thêm
-        </button>
->>>>>>> backend-update
-      </form>
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          {/* Ô nhập Họ và tên chỉ hiện khi đăng ký */}
+          {!isLogin && (
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Họ và tên"
+              className="border border-pink-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-400 outline-none"
+              required={!isLogin}
+            />
+          )}
+
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="border border-pink-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-400 outline-none"
+            required
+          />
+
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Mật khẩu"
+            className="border border-pink-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-400 outline-none"
+            required
+          />
+
+          <button
+            type="submit"
+            className="bg-pink-500 hover:bg-pink-600 text-white font-medium py-2 rounded-lg flex items-center justify-center gap-2 shadow transition-all duration-200"
+          >
+            {isLogin ? (
+              <>
+                <FaSignInAlt /> Đăng nhập
+              </>
+            ) : (
+              <>
+                <FaUserPlus /> Đăng ký
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Nút chuyển giữa đăng nhập / đăng ký */}
+        <p className="text-center text-sm text-gray-600 mt-5">
+          {isLogin ? (
+            <>
+              Chưa có tài khoản?{" "}
+              <button
+                onClick={() => setIsLogin(false)}
+                className="text-pink-600 hover:underline font-medium"
+              >
+                Đăng ký
+              </button>
+            </>
+          ) : (
+            <>
+              Đã có tài khoản?{" "}
+              <button
+                onClick={() => setIsLogin(true)}
+                className="text-pink-600 hover:underline font-medium"
+              >
+                Đăng nhập
+              </button>
+            </>
+          )}
+        </p>
+      </div>
     </div>
   );
 }

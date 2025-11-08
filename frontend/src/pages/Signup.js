@@ -1,0 +1,104 @@
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "../App.css";
+
+export default function Signup({ setIsLoggedIn }) {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [avatar, setAvatar] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    if (!username || !email || !password) {
+      alert("Vui lòng nhập đầy đủ thông tin!");
+      return;
+    }
+    setLoading(true);
+
+    try {
+      const res = await fetch("https://unobscenely-colorimetrical-katelynn.ngrok-free.dev/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password, avatar })
+      });
+
+      const data = await res.json();
+      console.log("📩 Signup result:", data);
+
+      if (!res.ok) {
+        alert(data.message || "Đăng ký thất bại!");
+        return;
+      }
+
+      // Nếu backend trả token → tự login
+      if (data.accessToken) {
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("role", data.user.role || "user");
+        localStorage.setItem("isLoggedIn", "true");
+        if (setIsLoggedIn) setIsLoggedIn(true);
+        alert(`Chào mừng ${data.user.name || "bạn"}!`);
+        navigate("/home");
+      } else {
+        alert("Đăng ký thành công! Vui lòng login.");
+        navigate("/login");
+      }
+
+    } catch (err) {
+      console.error("❌ Lỗi signup:", err);
+      alert("Không thể kết nối server!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="center-container">
+      <div className="form-box">
+        <h2>Đăng ký</h2>
+        <form onSubmit={handleSignup}>
+          <input
+            type="text"
+            placeholder="Tên đăng nhập"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            autoComplete="username"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
+          <input
+            type="password"
+            placeholder="Mật khẩu"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+          />
+          <input
+            type="text"
+            placeholder="Avatar URL (tuỳ chọn)"
+            value={avatar}
+            onChange={(e) => setAvatar(e.target.value)}
+          />
+<button type="submit" className="btn" disabled={loading}>
+            {loading ? "⏳ Đang xử lý..." : "📝 Đăng ký"}
+          </button>
+        </form>
+        <p>
+          Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+        </p>
+      </div>
+    </div>
+  );
+}

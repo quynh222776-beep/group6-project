@@ -1,101 +1,109 @@
-/* Background */
-.app-bg {
-  background: linear-gradient(180deg, #fff6fb 0%, #ffeef6 100%);
-  min-height: 100vh;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 40px 20px;
-  box-sizing: border-box;
-  font-family: "Poppins", "Segoe UI", sans-serif;
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: #fafafa;
+  margin: 0;
+  padding: 0;
   color: #333;
 }
 
-/* Container */
-.app-container {
-  width: 100%;
-  max-width: 960px;
-  background: #fffafc;
-  border-radius: 16px;
-  padding: 28px;
-  box-shadow: 0 8px 30px rgba(231,84,128,0.08);
-}
-
-/* Header */
-.app-header {
-  text-align: center;
-  margin-bottom: 18px;
-}
-.app-header h1 {
-  color: #e75480;
-  margin: 0;
-  font-size: 1.8rem;
-}
-.subtitle {
-  color: #b24b6a;
-  margin-top: 6px;
-  font-size: 0.95rem;
-}
-
-/* Grid: form left, list right on wide screens */
-.main-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-
-/* Card */
-.card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 4px 14px rgba(231,84,128,0.04);
-}
-
-/* Card title */
-.card-title {
-  color: #e75480;
-  margin: 0 0 12px 0;
+/* LOGIN + SIGNUP CENTER */
+.center-container {
+  height: 100vh;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
-  font-size: 1.05rem;
 }
 
-/* Form */
-.form {
+.form-box {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 380px;
+}
+
+form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-.input {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #ffd6e8;
-  outline: none;
-  transition: box-shadow .15s, border-color .15s;
-}
-.input:focus {
-  border-color: #ff7fb0;
-  box-shadow: 0 0 8px rgba(255,127,176,0.12);
+  gap: 15px;
+  margin-top: 20px;
 }
 
-/* Button */
+input {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f0f4ff;
+}
+
+input:focus {
+  outline: none;
+  border-color: #e91e63;
+}
+
 .btn {
-  background: linear-gradient(90deg,#ff66a3,#e75480);
+  background-color: #e91e63;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn:hover {
+  background-color: #d81b60;
+}
+
+a {
+  color: #e91e63;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* HOME PAGE */
+/* Trang Home */
+.home-container {
+  width: 90%;
+  margin: 30px auto;
+  max-width: 800px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.username {
+  font-weight: bold;
+  color: #333;
+}
+
+.logout-btn {
+  background-color: #ff4d4f;
   border: none;
   color: white;
-  padding: 10px 12px;
-  border-radius: 10px;
+  padding: 8px 14px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  font-weight: 500;
 }
-.btn:hover { transform: translateY(-2px); }
 
-/* Table */
+.logout-btn:hover {
+  background-color: #d9363e;
+}
+
 .user-table {
   width: 100%;
   border-collapse: collapse;
@@ -105,24 +113,89 @@
   border-bottom: 1px solid #ffe6f0;
   text-align: left;
 }
-.user-table th {
-  background: #fff0f7;
-  color: #c04b76;
-  font-weight: 600;
+
+.user-table th,
+.user-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
 }
 
-/* Inline icons */
-.icon-inline { color: #e75480; margin-right: 6px; }
+.user-table th {
+  background-color: #f2f2f2;
+}
+/* ===========================
+   🔘 Các nút chung
+=========================== */
+.btn {
+  background-color: #0077b6;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
 
-/* small text */
-.muted { color: #8a6b79; }
+.btn:hover {
+  opacity: 0.9;
+}
 
-/* Footer */
-.app-footer { text-align: center; margin-top: 16px; color: #b24b6a; }
+/* ✏️ Nút cập nhật */
+.btn-update {
+  background-color: #0096c7;
+}
 
-/* Responsive */
-@media (max-width: 800px) {
-  .main-grid { grid-template-columns: 1fr; }
-  .app-container { padding: 16px; }
-  .input { width: 100%; }
+/* ❌ Nút hủy */
+.btn-cancel {
+  background-color: #adb5bd;
+}
+
+/* 🗑️ Nút xóa tài khoản */
+.btn-danger {
+  background-color: #e63946;
+}
+
+/* 🧭 Nhóm nút hành động bên dưới thông tin */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* 📋 Khi chỉnh sửa */
+.edit-buttons {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* 🧱 Container chính */
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* 📦 Hộp thông tin người dùng */
+.form-box {
+  background: #f1f5f9;
+  padding: 24px;
+  border-radius: 12px;
+  width: 360px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+/* 🧾 Vùng hiển thị thông tin */
+.info-box p {
+  margin: 8px 0;
+  font-size: 15px;
+}
+
+/* 🖼️ Ảnh avatar */
+.info-box img {
+  border: 2px solid #90e0ef;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
