@@ -128,5 +128,54 @@ router.delete("/delete", verifyToken, async (req, res) => {
   }
 });
 
+// routes/auth.js
 
+
+// Route quên mật khẩu
+router.post('/forgot-password', (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email không hợp lệ" });
+  }
+
+  // Giả sử bạn đang tạo một token
+  const token = "fake-token-123456"; // Đây là token giả, thay thế bằng logic thực tế
+  return res.json({ token });
+});
+///reset
+router.post("/reset-password/:token", async (req, res) => {
+  const { token } = req.params;  // Lấy token từ URL params
+  const { newPassword } = req.body;  // Lấy mật khẩu mới từ body
+
+  if (!newPassword) {
+    return res.status(400).json({ message: "Vui lòng nhập mật khẩu mới!" });
+  }
+
+  try {
+    // Giải mã token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    // Kiểm tra xem token có hợp lệ hay không (thực tế bạn cần thêm logic xác nhận token hết hạn)
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng!" });
+    }
+
+    // Mã hóa mật khẩu mới
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Cập nhật mật khẩu cho người dùng
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: "Đặt lại mật khẩu thành công!" });
+
+  } catch (err) {
+    console.error("❌ Lỗi khi đặt lại mật khẩu:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+});
 module.exports = router;

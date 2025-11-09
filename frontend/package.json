@@ -9,6 +9,8 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.12.2",
     "body-parser": "^2.2.0",
+    "cloudinary": "^2.8.0",
+    "express-fileupload": "^1.5.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",

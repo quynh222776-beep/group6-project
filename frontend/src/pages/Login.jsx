@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../App.css";
 
-export default function Login({ setIsLoggedIn }) {
+const Login = ({ setIsLoggedIn }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -80,7 +80,13 @@ export default function Login({ setIsLoggedIn }) {
         <p>
           Chưa có tài khoản? <Link to="/signup">Đăng ký</Link>
         </p>
+        {/* Link Quên Mật Khẩu */}
+        <p>
+          <Link to="/forgot-password">Quên mật khẩu?</Link>
+        </p>
       </div>
     </div>
   );
-}
+};
+
+export default Login;

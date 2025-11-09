@@ -12,6 +12,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // ✅ Route upload ảnh đại diện
-router.post("/avatar", verifyToken, upload.single("file"), uploadAvatar);
+router.post("/upload-avatar", verifyToken, upload.single("file"), uploadAvatar);
 
 module.exports = router;

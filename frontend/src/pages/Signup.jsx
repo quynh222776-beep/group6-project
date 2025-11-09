@@ -6,23 +6,35 @@ export default function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [avatar, setAvatar] = useState("");
+  const [avatar, setAvatar] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
+
     if (!username || !email || !password) {
       alert("Vui lòng nhập đầy đủ thông tin!");
       return;
     }
+
     setLoading(true);
+
     try {
+      // Tạo formData để gửi file ảnh
+      const formData = new FormData();
+      formData.append("username", username);
+      formData.append("email", email);
+      formData.append("password", password);
+      if (avatar) {
+        formData.append("avatar", avatar);
+      }
+
       const res = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password, avatar }),
+        body: formData,
       });
+
       const data = await res.json();
       console.log("📩 Signup result:", data);
 
@@ -39,6 +51,11 @@ export default function Signup() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Hàm xử lý thay đổi avatar
+  const handleAvatarChange = (e) => {
+    setAvatar(e.target.files[0]);
   };
 
   return (
@@ -67,11 +84,11 @@ export default function Signup() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          {/* Thêm trường tải ảnh avatar */}
           <input
-            type="text"
-            placeholder="Avatar URL (tuỳ chọn)"
-            value={avatar}
-            onChange={(e) => setAvatar(e.target.value)}
+            type="file"
+            placeholder="Chọn ảnh đại diện"
+            onChange={handleAvatarChange}
           />
           <button type="submit" className="btn" disabled={loading}>
             {loading ? "⏳ Đang xử lý..." : "📝 Đăng ký"}
