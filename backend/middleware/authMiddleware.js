@@ -1,33 +1,38 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-// ✅ Xác thực token
+/* =============================
+   1️⃣ Middleware kiểm tra JWT
+============================= */
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Không có token hoặc token sai định dạng" });
+  const token = req.header("Authorization")?.replace("Bearer ", "");
+  if (!token) {
+    return res.status(401).json({ message: "Không có token, truy cập bị từ chối!" });
   }
 
-  const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
+    req.userId = decoded.id; // Lưu id người dùng vào request
+    req.role = decoded.role; // Lưu vai trò người dùng nếu có
     next();
   } catch (error) {
-    return res.status(403).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
+    res.status(400).json({ message: "Token không hợp lệ!" });
   }
 };
 
-// ✅ Kiểm tra quyền admin
+/* =============================
+   2️⃣ Middleware kiểm tra quyền admin
+============================= */
 const isAdmin = async (req, res, next) => {
   try {
     const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng!" });
     if (user.role !== "admin") {
-      return res.status(403).json({ message: "Bạn không có quyền admin" });
+      return res.status(403).json({ message: "Bạn không có quyền truy cập tài nguyên này!" });
     }
     next();
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Lỗi máy chủ!", error: error.message });
   }
 };
 
