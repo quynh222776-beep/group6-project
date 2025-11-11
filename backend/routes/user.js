@@ -1,70 +1,67 @@
+// routes/users.js
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const bcrypt = require("bcrypt");
 const { verifyToken, isAdmin } = require("../middleware/authMiddleware");
 
-/* =============================
-   1️⃣ Admin xem tất cả người dùng
-============================= */
-router.get("/", verifyToken, isAdmin, async (req, res) => {
-  try {
-    const users = await User.find().select("-password");
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-/* =============================
-   2️⃣ User xem thông tin cá nhân
-============================= */
+// ---------------------------------------------
+// GET /users/me → lấy thông tin user hiện tại
+// ---------------------------------------------
 router.get("/me", verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("-password");
-    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    const userId = req.user.id; // req.user được verifyToken gắn
+    const user = await User.findById(userId).select("-password"); // bỏ password
+    if (!user) return res.status(404).json({ message: "User không tồn tại" });
     res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Lỗi server" });
   }
 });
 
-/* =============================
-   3️⃣ User cập nhật thông tin cá nhân
-============================= */
-router.put("/me", verifyToken, async (req, res) => {
+// ---------------------------------------------
+// GET /users → admin lấy toàn bộ user
+// ---------------------------------------------
+router.get("/", verifyToken, isAdmin, async (req, res) => {
   try {
-    const { name, password } = req.body;
+    const users = await User.find().select("-password"); // bỏ password
+    res.json(users); // trả về mảng users
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+});
 
-    const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
-
-    if (name) user.name = name;
-    if (password) {
-      const bcrypt = require("bcrypt");
-      user.password = await bcrypt.hash(password, 10);
+// ---------------------------------------------
+// POST /users → admin tạo user mới
+// ---------------------------------------------
+router.post("/", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const { name, email, role, password } = req.body;
+    if (!name || !email || !role || !password) {
+      return res.status(400).json({ message: "Thiếu thông tin" });
     }
 
-    await user.save();
+    // Kiểm tra email đã tồn tại chưa
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email đã tồn tại" });
+    }
 
-    res.json({
-      message: "Cập nhật thành công",
-      user: { id: user._id, name: user.name, email: user.email },
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await User.create({
+      name,
+      email,
+      role,
+      password: hashedPassword,
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
-/* =============================
-   4️⃣ Admin xóa người dùng
-============================= */
-router.delete("/:id", verifyToken, isAdmin, async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
-    res.json({ message: "Đã xóa người dùng thành công" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(201).json(newUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Lỗi server" });
   }
 });
 

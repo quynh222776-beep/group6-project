@@ -8,9 +8,9 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ["user", "admin"], default: "user" },
     resetToken: { type: String },
     resetTokenExpire: { type: Date },
-
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("User", userSchema);
+// ⚡ Fix lỗi OverwriteModelError
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);

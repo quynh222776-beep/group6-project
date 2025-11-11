@@ -1,5 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const uploadController = require("../controllers/uploadController");
+
+// Route upload avatar
+router.post("/avatar", uploadController.uploadAvatar);
 const multer = require("multer");
 const { uploadAvatar } = require("../controllers/uploadController");
 const { verifyToken } = require("../middleware/authMiddleware");

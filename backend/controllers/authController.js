@@ -1,109 +1,166 @@
-const crypto = require("crypto");
-const User = require("../models/User");
+// controllers/authController.js
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const RefreshToken = require("../models/refreshTokenModel");
+const nodemailer = require("nodemailer");
 
-/* ============ Đăng ký ============ */
-exports.signup = async (req, res) => {
+// 🔑 Hàm tạo Access Token (15 phút)
+const generateAccessToken = (user) => {
+  return jwt.sign(
+    { id: user._id, email: user.email, role: user.role }, // ✅ thêm role
+    process.env.JWT_SECRET,
+    { expiresIn: "15m" }
+  );
+};
+
+// 🔁 Hàm tạo Refresh Token (7 ngày)
+const generateRefreshToken = (user) => {
+  return jwt.sign(
+    { id: user._id, role: user.role }, // ✅ thêm role vào refresh token
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+};
+
+// 🧩 Đăng ký
+const signup = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { username, email, password, avatar } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
+    }
+
     const existingUser = await User.findOne({ email });
-    if (existingUser)
+    if (existingUser) {
       return res.status(400).json({ message: "Email đã tồn tại" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({
-      name,
+    const newUser = new User({
+      name: username,
       email,
       password: hashedPassword,
+      role: "user", // ✅ mặc định là user
     });
 
-    res.status(201).json({
-      message: "Đăng ký thành công",
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    await newUser.save();
+
+    res.status(201).json({ message: "Đăng ký thành công!", user: newUser });
+  } catch (err) {
+    console.error("❌ Signup error:", err);
+    res.status(500).json({ message: "Lỗi khi đăng ký", error: err.message });
   }
 };
 
-/* ============ Đăng nhập ============ */
-exports.login = async (req, res) => {
+// 🧠 Đăng nhập
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
+    }
+
     const user = await User.findOne({ email });
     if (!user)
-      return res.status(404).json({ message: "Không tìm thấy user" });
+      return res.status(400).json({ message: "Email không tồn tại" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
       return res.status(400).json({ message: "Sai mật khẩu" });
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "default_secret",
-      { expiresIn: "1h" }
-    );
+    // ✅ Tạo token có chứa role
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
-    res.json({ message: "Đăng nhập thành công", token });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    // ✅ Lưu refresh token vào DB
+    await RefreshToken.create({
+      userId: user._id,
+      token: refreshToken,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    res.status(200).json({
+      message: "Đăng nhập thành công",
+      accessToken,
+      refreshToken,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    console.error("❌ Login error:", err);
+    res.status(500).json({ message: "Lỗi khi đăng nhập", error: err.message });
   }
 };
 
-/* ============ Quên mật khẩu ============ */
-exports.forgotPassword = async (req, res) => {
+// 🔄 Làm mới Access Token
+const refreshToken = async (req, res) => {
   try {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(404).json({ message: "Không tìm thấy tài khoản này" });
+    const { token } = req.body;
+    if (!token) return res.status(401).json({ message: "Thiếu refresh token" });
 
-    // Tạo token reset ngẫu nhiên
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpire = Date.now() + 15 * 60 * 1000; // 15 phút
+    const stored = await RefreshToken.findOne({ token });
+    if (!stored) return res.status(403).json({ message: "Token không hợp lệ" });
 
-    user.resetToken = resetToken;
-    user.resetTokenExpire = resetTokenExpire;
-    await user.save();
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err)
+        return res.status(403).json({ message: "Refresh token hết hạn" });
 
-    console.log(`🔑 Token reset mật khẩu của ${email}: ${resetToken}`);
+      // ✅ tạo lại access token với role từ decoded
+      const newAccessToken = jwt.sign(
+        { id: decoded.id, role: decoded.role },
+        process.env.JWT_SECRET,
+        { expiresIn: "15m" }
+      );
 
-    res.json({
-      message: "Token đặt lại mật khẩu đã được tạo!",
-      resetToken,
+      res.json({ accessToken: newAccessToken });
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi khi làm mới token", error: err.message });
   }
 };
 
-/* ============ Đặt lại mật khẩu ============ */
-exports.resetPassword = async (req, res) => {
+// 🚪 Đăng xuất
+const logout = async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
+    const { token } = req.body;
+    if (!token)
+      return res.status(400).json({ message: "Thiếu refresh token để đăng xuất" });
 
-    const user = await User.findOne({
-      resetToken: token,
-      resetTokenExpire: { $gt: Date.now() },
-    });
-
-    if (!user)
-      return res
-        .status(400)
-        .json({ message: "Token không hợp lệ hoặc đã hết hạn" });
-
-    user.password = await bcrypt.hash(newPassword, 10);
-    user.resetToken = undefined;
-    user.resetTokenExpire = undefined;
-    await user.save();
-
-    res.json({ message: "Đặt lại mật khẩu thành công" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    await RefreshToken.findOneAndDelete({ token });
+    res.json({ message: "Đăng xuất thành công, token đã bị thu hồi" });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi khi đăng xuất", error: err.message });
   }
+};
+
+// 📧 Quên mật khẩu
+const forgotPassword = async (req, res) => {
+  res.json({ message: "Tính năng quên mật khẩu đang được phát triển" });
+};
+
+// 🔁 Đặt lại mật khẩu
+const resetPassword = async (req, res) => {
+  res.json({ message: "Tính năng đặt lại mật khẩu đang được phát triển" });
+};
+
+// 👤 Lấy thông tin người dùng hiện tại
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};
+
+module.exports = {
+  signup,
+  login,
+  refreshToken,
+  logout,
+  forgotPassword,
+  resetPassword,
+  getMe,
 };
