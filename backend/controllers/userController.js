@@ -1,7 +1,8 @@
 // backend/controllers/userController.js
-const User = require("../../database/models/user");
+const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const cloudinary = require('cloudinary').v2;
 
 // 🔧 Kiểm tra biến môi trường Cloudinary (tùy chọn)
 console.log("Cloud Name:", process.env.CLOUDINARY_CLOUD_NAME);
@@ -38,13 +39,17 @@ exports.getAllUsers = async (req, res) => {
 // 🗑️ Xóa user
 exports.deleteUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
+    const userId = req.user.id; // Lấy ID từ token
 
-    await user.deleteOne();
-    res.json({ message: "Đã xóa user thành công" });
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng!" });
+    }
+
+    res.json({ message: "Xóa tài khoản thành công!" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("❌ Lỗi xóa tài khoản:", err);
+    res.status(500).json({ message: "Lỗi server khi xóa tài khoản!" });
   }
 };
 
@@ -119,4 +124,29 @@ exports.login = async (req, res) => {
 // 🚪 Đăng xuất (client xóa token)
 exports.logout = async (req, res) => {
   res.json({ message: "Đăng xuất thành công (client xóa token)" });
+};
+//upload avartar
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Upload avatar
+exports.uploadAvatar = async (req, res) => {
+  try {
+    const file = req.files.avatar; // Đảm bảo gửi ảnh dưới dạng form-data
+    const result = await cloudinary.uploader.upload(file.tempFilePath);
+
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+
+    user.avatar = result.secure_url;
+    await user.save();
+
+    res.json({ message: 'Cập nhật avatar thành công!', avatar: user.avatar });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi khi upload avatar', error: err.message });
+  }
 };

@@ -1,123 +1,129 @@
-const crypto = require("crypto");
-const User = require("../models/User");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const cloudinary = require("../utils/cloudinary");
 
-const mongoose = require('mongoose');
-require('dotenv').config();
-const User = require('./models/User');
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(async () => {
-    await User.deleteMany();
-    await User.create([
-      { username: 'admin', email: 'admin@example.com', password: '123456', role: 'admin' },
-      { username: 'user', email: 'user@example.com', password: '123456', role: 'user' }
-    ]);
-    console.log('Seed done'); process.exit();
-  }).catch(console.error);
-
-/* ============ Đăng ký ============ */
+// 📝 Đăng ký tài khoản
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser)
-      return res.status(400).json({ message: "Email đã tồn tại" });
+      return res.status(400).json({ message: "Email đã được đăng ký!" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
+    const user = new User({ username, email, password: hashedPassword });
+    await user.save();
 
-    res.status(201).json({
-      message: "Đăng ký thành công",
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-      },
-    });
+    res.status(201).json({ message: "Đăng ký thành công!" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Lỗi server", error });
   }
 };
 
-/* ============ Đăng nhập ============ */
+// 🔑 Đăng nhập
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user)
-      return res.status(404).json({ message: "Không tìm thấy user" });
+      return res.status(404).json({ message: "Không tìm thấy người dùng!" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return res.status(400).json({ message: "Sai mật khẩu" });
+      return res.status(400).json({ message: "Mật khẩu không đúng!" });
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "default_secret",
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
-    res.json({ message: "Đăng nhập thành công", token });
+    res.json({ message: "Đăng nhập thành công!", token, user });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Lỗi server", error });
   }
 };
 
-/* ============ Quên mật khẩu ============ */
+// Quên mật khẩu
 exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
   try {
-    const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user)
-      return res.status(404).json({ message: "Không tìm thấy tài khoản này" });
+      return res.status(404).json({ message: "Email không tồn tại!" });
 
-    // Tạo token reset ngẫu nhiên
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpire = Date.now() + 15 * 60 * 1000; // 15 phút
+    const token = jwt.sign({ email }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
 
-    user.resetToken = resetToken;
-    user.resetTokenExpire = resetTokenExpire;
+    user.resetToken = token;
+    user.resetTokenExp = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    console.log(`🔑 Token reset mật khẩu của ${email}: ${resetToken}`);
-
     res.json({
-      message: "Token đặt lại mật khẩu đã được tạo!",
-      resetToken,
+      message: "Token reset (demo)",
+      resetToken: token,
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server!" });
   }
 };
 
-/* ============ Đặt lại mật khẩu ============ */
+// Đặt lại mật khẩu
 exports.resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
   try {
-    const { token, newPassword } = req.body;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findOne({
+      email: decoded.email,
       resetToken: token,
-      resetTokenExpire: { $gt: Date.now() },
+      resetTokenExp: { $gt: Date.now() },
     });
 
     if (!user)
-      return res
-        .status(400)
-        .json({ message: "Token không hợp lệ hoặc đã hết hạn" });
+      return res.status(400).json({ message: "Token không hợp lệ hoặc hết hạn!" });
 
-    user.password = await bcrypt.hash(newPassword, 10);
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
     user.resetToken = undefined;
-    user.resetTokenExpire = undefined;
+    user.resetTokenExp = undefined;
     await user.save();
 
-    res.json({ message: "Đặt lại mật khẩu thành công" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.json({ message: "Đổi mật khẩu thành công!" });
+  } catch (err) {
+    res.status(500).json({ message: "Token không hợp lệ!" });
+  }
+};
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.files || !req.files.avatar) {
+      return res.status(400).json({ message: "Vui lòng chọn ảnh!" });
+    }
+
+    const avatar = req.files.avatar;  // Lấy ảnh từ form-data
+
+    const uploadRes = await cloudinary.uploader.upload(avatar.tempFilePath || avatar.data, {
+      folder: "avatars",
+      transformation: [
+        { width: 150, height: 150, crop: "thumb" }, // Resize ảnh nếu cần
+      ],
+    });
+
+    // Lưu URL ảnh vào cơ sở dữ liệu
+    const user = await User.findById(req.user.id);
+    user.avatar = uploadRes.secure_url;
+    await user.save();
+
+    res.json({
+      message: "✅ Upload avatar thành công!",
+      avatar: user.avatar,
+    });
+  } catch (err) {
+    console.error("Cloudinary upload error: ", err);
+    res.status(500).json({
+      message: "❌ Lỗi upload avatar!",
+      error: err.message || "Không có thông tin lỗi chi tiết",
+    });
   }
 };

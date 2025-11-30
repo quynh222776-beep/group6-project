@@ -7,63 +7,69 @@ const User = require("../models/User");
 const { verifyToken, isAdmin } = require("../middleware/authMiddleware");
 
 // =============================
-// 1️⃣ ADMIN: Lấy danh sách tất cả người dùng
+// 📦 LẤY DANH SÁCH TẤT CẢ NGƯỜI DÙNG
 // =============================
+// 👉 Chỉ Admin mới xem được (nếu bạn đang test có thể bỏ middleware verifyToken, isAdmin)
 router.get("/", verifyToken, isAdmin, async (req, res) => {
   try {
-    const users = await User.find().select("-password");
-    res.json(users);
+    const users = await User.find({}, "username email"); // ✅ chỉ lấy 2 trường cần thiết
+    res.status(200).json(users); // ✅ Trả về MẢNG users trực tiếp (React .map sẽ hoạt động)
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("🔥 Lỗi lấy danh sách người dùng:", error);
+    res.status(500).json({ message: "Lỗi khi lấy danh sách người dùng", error: error.message });
   }
 });
 
 // =============================
-// 2️⃣ USER: Xem thông tin cá nhân
+// 👤 LẤY THÔNG TIN CÁ NHÂN
 // =============================
 router.get("/me", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select("-password");
     if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
-    res.json(user);
+    res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Lỗi khi lấy thông tin cá nhân", error: error.message });
   }
 });
 
 // =============================
-// 3️⃣ USER: Cập nhật thông tin cá nhân
+// ✏️ CẬP NHẬT THÔNG TIN CÁ NHÂN
 // =============================
 router.put("/me", verifyToken, async (req, res) => {
   try {
-    const { name, password } = req.body;
+    const { username, password } = req.body;
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
 
-    if (name) user.name = name;
+    if (username) user.username = username;
     if (password) user.password = await bcrypt.hash(password, 10);
 
     await user.save();
 
-    res.json({
+    res.status(200).json({
       message: "Cập nhật thành công",
-      user: { id: user._id, name: user.name, email: user.email },
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+      },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Lỗi khi cập nhật người dùng", error: error.message });
   }
 });
 
 // =============================
-// 4️⃣ ADMIN: Xóa người dùng theo ID
+// 🗑️ XÓA NGƯỜI DÙNG (Admin)
 // =============================
 router.delete("/:id", verifyToken, isAdmin, async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
-    res.json({ message: "Đã xóa người dùng thành công" });
+    res.status(200).json({ message: "Đã xóa người dùng thành công" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Lỗi khi xóa người dùng", error: error.message });
   }
 });
 

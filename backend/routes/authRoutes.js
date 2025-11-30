@@ -1,17 +1,37 @@
-const express = require("express");
-const router = express.Router();
-const authController = require("../controllers/authController");
+// ==========================
+// 📁 FILE: routes/authRoutes.js
+// ==========================
 
-// Đăng ký
+// 🌍 Import modules
+const express = require("express");
+
+// 📂 Import controllers
+const authController = require("../controllers/authController");
+// 📂 Import middleware
+const authMiddleware = require("../middleware/authMiddleware");
+
+const router = express.Router();
+
+
+
+
+// ==========================
+// 📝 Routes
+// ==========================
+
+// Route đăng ký tài khoản
 router.post("/signup", authController.signup);
 
-// Đăng nhập
+// Route đăng nhập
 router.post("/login", authController.login);
 
-// Quên mật khẩu
+// Route quên mật khẩu
 router.post("/forgot-password", authController.forgotPassword);
 
-// Đặt lại mật khẩu
-router.post("/reset-password", authController.resetPassword);
+// Route đặt lại mật khẩu
+router.post("/reset-password/:token", authController.resetPassword);
+
+// Route upload avatar (cần authMiddleware để xác thực người dùng)
+router.post("/upload-avatar", authMiddleware, authController.uploadAvatar);
 
 module.exports = router;

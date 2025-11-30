@@ -1,19 +1,24 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { FaUserPlus, FaSignInAlt } from "react-icons/fa";
 
 export default function AuthForm() {
+  // -------------------- STATE --------------------
   const [isLogin, setIsLogin] = useState(false); // false = đăng ký, true = đăng nhập
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
+  // Đường dẫn backend API (bạn giữ nguyên nếu server chạy localhost:5000)
   const API = "http://localhost:5000/api/auth";
 
-  // ✅ Xử lý khi submit form
+  // -------------------- HANDLE SUBMIT --------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Kiểm tra dữ liệu đầu vào
     if (!email.trim() || !password.trim()) {
       alert("⚠️ Vui lòng nhập đầy đủ Email và Mật khẩu!");
       return;
@@ -21,26 +26,38 @@ export default function AuthForm() {
 
     try {
       if (isLogin) {
-        // Đăng nhập
+        // ====== ĐĂNG NHẬP ======
         const res = await axios.post(`${API}/login`, { email, password });
-        alert("✅ Đăng nhập thành công!");
-        console.log("Token:", res.data.token);
 
-        // Lưu token vào localStorage
-        localStorage.setItem("token", res.data.token);
+        if (res.data.token) {
+          // ✅ Lưu token
+          localStorage.setItem("token", res.data.token);
+          alert("✅ Đăng nhập thành công!");
+
+          // ✅ Điều hướng theo role (nếu có)
+          if (res.data.user?.role === "admin") {
+            navigate("/users"); // Admin → trang quản lý người dùng
+          } else {
+            navigate("/profile"); // User thường → trang cá nhân
+          }
+        }
       } else {
-        // Đăng ký
+        // ====== ĐĂNG KÝ ======
         if (!name.trim()) {
           alert("⚠️ Vui lòng nhập họ và tên!");
           return;
         }
-        const res = await axios.post(`${API}/signup`, {
-          name,
+
+        // ⚠️ Sửa đúng endpoint: register (không phải signup)
+        const res = await axios.post(`${API}/register`, {
+          username: name, // hoặc "name" nếu backend dùng name
           email,
           password,
         });
-        alert("🎉 Đăng ký thành công!");
+
+        alert("🎉 Đăng ký thành công! Hãy đăng nhập.");
         console.log(res.data);
+        setIsLogin(true); // Chuyển sang chế độ đăng nhập
       }
 
       // Reset form
@@ -48,11 +65,12 @@ export default function AuthForm() {
       setEmail("");
       setPassword("");
     } catch (err) {
-      console.error(err);
-      alert("❌ Có lỗi xảy ra. Kiểm tra lại backend hoặc dữ liệu nhập!");
+      console.error("❌ Lỗi:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "❌ Có lỗi xảy ra từ server!");
     }
   };
 
+  // -------------------- UI --------------------
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-pink-100">
       <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 border border-pink-200">
@@ -61,6 +79,7 @@ export default function AuthForm() {
         </h2>
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          {/* Ô nhập Họ và tên chỉ hiện khi đăng ký */}
           {!isLogin && (
             <input
               type="text"
@@ -106,6 +125,7 @@ export default function AuthForm() {
           </button>
         </form>
 
+        {/* Nút chuyển giữa đăng nhập / đăng ký */}
         <p className="text-center text-sm text-gray-600 mt-5">
           {isLogin ? (
             <>
